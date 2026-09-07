@@ -13,8 +13,8 @@
  * what protects the data.
  * ------------------------------------------------------------------------- */
 window.PREDICTOR_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://ibzlgbfzzapnuhjynxck.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_nBWA8QlVShvK_4XdSsjMRA_EKdfeiEj",
 
   // Optional: shown in the sidebar footer.
   APP_NAME: "Predictor",
