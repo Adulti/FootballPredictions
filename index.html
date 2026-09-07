@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Predictor — prediction leagues</title>
+  <meta name="description" content="Run football score prediction leagues: fixtures, predictions, weekly results and historic league tables." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127942;</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/app.css" />
+</head>
+<body>
+  <div id="boot" class="boot">
+    <div class="boot__mark">🏆</div>
+    <div class="boot__label">Loading Predictor…</div>
+  </div>
+
+  <div id="app" hidden></div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modal-root"></div>
+
+  <script src="./config.js"></script>
+  <script type="module" src="./js/app.js"></script>
+  <noscript><p style="padding:2rem;font:16px system-ui">Predictor needs JavaScript enabled.</p></noscript>
+</body>
+</html>
