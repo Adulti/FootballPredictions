@@ -16,6 +16,7 @@ No build step. No bundler. No `npm install`. Just HTML, CSS and ES modules.
 | Goal difference correct | **4** |
 | Right outcome only | **2** |
 | Wrong | **−1** |
+| No prediction submitted | **−2** |
 | **Banker** — one fixture per gameweek, per entrant | **×2** on that fixture |
 
 The hierarchy is strict: exact ⊃ goal difference ⊃ outcome, so a 2–1 predicted as

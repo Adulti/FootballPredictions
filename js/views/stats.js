@@ -72,6 +72,7 @@ export async function render(host) {
               ["Goal difference", row.gd, "var(--accent)"],
               ["Outcome only", row.outcome, "var(--text-secondary)"],
               ["Wrong", row.wrong, "var(--bad)"],
+              ["No prediction", row.missing, "var(--bad)"],
               ["Hit rate", `${Math.round(row.hitRate * 100)}%`, "var(--text-primary)"],
               ["Banker extra", `${row.bonusPoints >= 0 ? "+" : ""}${row.bonusPoints}`, "var(--warn)"],
             ].map(([l, v, c]) => html`

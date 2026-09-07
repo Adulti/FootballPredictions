@@ -6,6 +6,7 @@
      goal difference correct .....  4   (and not exact)
      outcome correct .............  2   (and GD not correct)
      wrong .......................  -1
+     no prediction submitted .....  -2
      one bonus fixture per gameweek doubles that fixture's points
    Hierarchy matters: exact ⊃ goal-difference ⊃ outcome. A correct goal
    difference always implies a correct outcome, so it is tested first.
@@ -16,6 +17,7 @@ export const DEFAULT_RULES = Object.freeze({
   gd: 4,
   outcome: 2,
   wrong: -1,
+  missed: -2, // nothing submitted for a fixture that has a result
   bonusMultiplier: 2,
   bonusAppliesToNegatives: true, // a doubled miss costs double
   bonusPerWeek: 1,
@@ -23,7 +25,7 @@ export const DEFAULT_RULES = Object.freeze({
 
 export function normaliseRules(raw) {
   const r = { ...DEFAULT_RULES, ...(raw || {}) };
-  for (const k of ["exact", "gd", "outcome", "wrong", "bonusMultiplier", "bonusPerWeek"]) {
+  for (const k of ["exact", "gd", "outcome", "wrong", "missed", "bonusMultiplier", "bonusPerWeek"]) {
     const n = Number(r[k]);
     r[k] = Number.isFinite(n) ? n : DEFAULT_RULES[k];
   }
@@ -48,15 +50,17 @@ export function classify(pred, fx) {
   return "wrong";
 }
 
+const isBlank = (v) => v === null || v === undefined || v === "";
+
 /**
- * Points for a single prediction.
+ * Points for a single prediction. Pass `pred = null` for "nothing submitted" —
+ * once the fixture has a result that scores `rules.missed`.
  * @returns {{kind:string, base:number, points:number, bonus:boolean}}
  */
 export function scorePrediction(pred, fx, rules = DEFAULT_RULES) {
-  if (!pred || !hasResult(fx)) return { kind: "pending", base: 0, points: 0, bonus: false };
-  if (pred.home_score === null || pred.home_score === undefined || pred.home_score === "" ||
-      pred.away_score === null || pred.away_score === undefined || pred.away_score === "") {
-    return { kind: "none", base: 0, points: 0, bonus: false };
+  if (!hasResult(fx)) return { kind: "pending", base: 0, points: 0, bonus: false };
+  if (!pred || isBlank(pred.home_score) || isBlank(pred.away_score)) {
+    return { kind: "none", base: rules.missed, points: rules.missed, bonus: false };
   }
   const kind = classify(pred, fx);
   const base = rules[kind === "exact" ? "exact" : kind];
@@ -120,7 +124,8 @@ export function buildTallies({ fixtures = [], predictions = [], entrants = [], r
     cells.set(`${fx.id}|${eid}`, res);
 
     if (p.is_bonus) t.bonusFixtureId = String(p.fixture_id);
-    if (res.kind === "pending" || res.kind === "none") continue;
+    if (res.kind === "pending") continue;
+    if (res.kind === "none") { t.points += res.points; t.missing += 1; continue; }
 
     t.points += res.points;
     t[res.kind] += 1;
@@ -136,7 +141,10 @@ export function buildTallies({ fixtures = [], predictions = [], entrants = [], r
     for (const e of entrants) {
       if (!predKey.has(`${fx.id}|${e.id}`)) {
         const t = tallies.get(String(e.id)) || blankTally();
+        const res = scorePrediction(null, fx, R);
+        cells.set(`${fx.id}|${e.id}`, res);
         t.missing += 1;
+        t.points += res.points;
         tallies.set(String(e.id), t);
       }
     }
@@ -192,7 +200,7 @@ export function standings(tal, entrants, throughGw = null) {
       row.points += t.points;
       row.exact += t.exact; row.gd += t.gd; row.outcome += t.outcome; row.wrong += t.wrong;
       row.played += t.played; row.missing += t.missing; row.bonusPoints += t.bonusPoints;
-      if (t.played > 0) {
+      if (t.played > 0 || t.missing > 0) {
         row.weeks += 1;
         if (row.best === null || t.points > row.best) row.best = t.points;
         if (row.worst === null || t.points < row.worst) row.worst = t.points;
@@ -253,7 +261,7 @@ export function records(tal, entrants) {
   const weekWins = new Map();
 
   for (const gw of tal.completedGameweeks) {
-    const rows = gameweekStandings(tal, entrants, gw).filter((r) => r.played > 0);
+    const rows = gameweekStandings(tal, entrants, gw).filter((r) => r.played > 0 || r.missing > 0);
     if (!rows.length) continue;
     const top = rows[0];
     for (const r of rows.filter((x) => x.rank === 1)) {

@@ -8,7 +8,9 @@ export const title = "Weekly results";
 
 const ptsChip = (res) => {
   if (!res || res.kind === "pending") return html`<span class="pts pts--none">–</span>`;
-  if (res.kind === "none") return html`<span class="pts pts--none" title="No prediction">·</span>`;
+  if (res.kind === "none") return res.points
+    ? html`<span class="pts pts--wrong" title="No prediction">${res.points}</span>`
+    : html`<span class="pts pts--none" title="No prediction">·</span>`;
   return html`<span class="pts pts--${res.kind}" title="${KIND_LABELS[res.kind]}${res.bonus ? " (banker ×2)" : ""}">${res.points > 0 ? "+" : ""}${res.points}</span>`;
 };
 

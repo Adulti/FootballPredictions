@@ -45,7 +45,7 @@ create table if not exists public.leagues (
   owner_id    uuid not null references auth.users(id) on delete cascade,
   join_code   text unique,
   rules       jsonb not null default '{
-    "exact": 7, "gd": 4, "outcome": 2, "wrong": -1,
+    "exact": 7, "gd": 4, "outcome": 2, "wrong": -1, "missed": -2,
     "bonusMultiplier": 2, "bonusAppliesToNegatives": true, "bonusPerWeek": 1
   }'::jsonb,
   created_at  timestamptz not null default now()

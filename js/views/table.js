@@ -55,6 +55,7 @@ export function tableRows(rows, tal, { showForm = true } = {}) {
       <td class="num mono">${r.gd}</td>
       <td class="num mono">${r.outcome}</td>
       <td class="num mono" style="color:var(--bad)">${r.wrong}</td>
+      <td class="num mono" style="color:var(--bad)">${r.missing}</td>
       <td class="num mono">${fmt1(r.avg)}</td>
       <td class="num mono">${r.bonusPoints >= 0 ? `+${r.bonusPoints}` : r.bonusPoints}</td>
       ${showForm ? html`<td>${formStrip(tal, r.entrantId)}</td>` : ""}
@@ -106,6 +107,7 @@ export async function render(host) {
                 <th class="num" title="Goal difference correct (${rules.gd} pts)">GD</th>
                 <th class="num" title="Outcome correct (${rules.outcome} pts)">Out</th>
                 <th class="num" title="Wrong (${rules.wrong} pts)">Miss</th>
+                <th class="num" title="No prediction submitted (${rules.missed} pts)">None</th>
                 <th class="num" title="Average points per gameweek played">Avg</th>
                 <th class="num" title="Extra points earned from bankers">Bonus</th>
                 <th title="Last 6 gameweeks, oldest first">Form</th>
@@ -127,6 +129,7 @@ export async function render(host) {
               <span class="scorekey__item"><span class="pts pts--gd">${rules.gd >= 0 ? "+" : ""}${rules.gd}</span> Goal difference right</span>
               <span class="scorekey__item"><span class="pts pts--outcome">${rules.outcome >= 0 ? "+" : ""}${rules.outcome}</span> Right outcome</span>
               <span class="scorekey__item"><span class="pts pts--wrong">${rules.wrong}</span> Wrong</span>
+              <span class="scorekey__item"><span class="pts pts--wrong">${rules.missed}</span> No prediction</span>
               <span class="scorekey__item"><span class="pill pill--bonus">×${rules.bonusMultiplier}</span> Banker (one fixture per week)</span>
             </div>
             <p class="muted" style="margin-top:10px;font-size:12.5px">
@@ -142,8 +145,8 @@ export async function render(host) {
     });
     qs("#print", host).addEventListener("click", () => window.print());
     qs("#csv", host).addEventListener("click", () => {
-      const head = ["Rank", "Full name", "Team name", "Points", "Exact", "GD", "Outcome", "Wrong", "Played", "Avg", "Bonus pts"];
-      const body = rows.map((r) => [r.rank, r.name, r.team, r.points, r.exact, r.gd, r.outcome, r.wrong, r.played, fmt1(r.avg), r.bonusPoints]);
+      const head = ["Rank", "Full name", "Team name", "Points", "Exact", "GD", "Outcome", "Wrong", "No prediction", "Played", "Avg", "Bonus pts"];
+      const body = rows.map((r) => [r.rank, r.name, r.team, r.points, r.exact, r.gd, r.outcome, r.wrong, r.missing, r.played, fmt1(r.avg), r.bonusPoints]);
       downloadCsv(`${state.league.name} — table${asOf === null ? "" : ` after GW${asOf}`}.csv`, [head, ...body]);
     });
   };

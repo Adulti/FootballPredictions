@@ -54,7 +54,7 @@ export function renderAuth() {
       </div>
 
       <p class="muted" style="text-align:center;margin-top:16px;font-size:12px">
-        7 pts exact score · 4 pts goal difference · 2 pts outcome · −1 wrong · one double-points banker each week
+        7 pts exact score · 4 pts goal difference · 2 pts outcome · −1 wrong · −2 no prediction · one double-points banker each week
       </p>
     </div>
   </div>`;

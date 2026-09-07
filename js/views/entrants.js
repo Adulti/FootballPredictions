@@ -80,6 +80,18 @@ export async function render(host, ctx) {
     });
   });
 
+  // Accounts that can be linked: every league member, plus the signed-in user
+  // if their own member row is missing (an owner of an older league).
+  const linkableAccounts = () => {
+    const list = state.members.filter((m) => m.user_id)
+      .map((m) => ({ user_id: m.user_id, display_name: m.display_name }));
+    const me = state.user;
+    if (me && !list.some((m) => m.user_id === me.id)) {
+      list.unshift({ user_id: me.id, display_name: `${me.name || me.email || "You"} (you)` });
+    }
+    return list;
+  };
+
   const openForm = (entrant) => openModal({
     title: entrant ? "Edit entrant" : "Add entrant",
     body: html`
@@ -92,12 +104,12 @@ export async function render(host, ctx) {
         <input class="input" id="f-team" value="${entrant?.team_name || ""}" placeholder="Morgan's Marauders" />
         <span class="hint">Shown under their name throughout the app.</span>
       </div>
-      ${state.members.length > 1 ? html`
+      ${linkableAccounts().length ? html`
       <div class="field">
         <label for="f-user">Link to an account (optional)</label>
         <select class="select" id="f-user">
           <option value="">Not linked</option>
-          ${raw(state.members.map((m) => `<option value="${m.user_id}" ${entrant?.user_id === m.user_id ? "selected" : ""}>${m.display_name}</option>`).join(""))}
+          ${raw(linkableAccounts().map((m) => `<option value="${m.user_id}" ${entrant?.user_id === m.user_id ? "selected" : ""}>${m.display_name}</option>`).join(""))}
         </select>
         <span class="hint">Linked entrants get their row highlighted when that person signs in.</span>
       </div>` : ""}`,

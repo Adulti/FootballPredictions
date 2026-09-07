@@ -163,7 +163,7 @@ export async function render(host, ctx) {
           <div class="field"><label for="n-out" class="muted">Outcome</label><input class="input input--num" id="n-out" type="number" value="${DEFAULT_RULES.outcome}" /></div>
           <div class="field"><label for="n-wrong" class="muted">Wrong</label><input class="input input--num" id="n-wrong" type="number" value="${DEFAULT_RULES.wrong}" /></div>
         </div>
-        <span class="hint">Defaults match the classic 7 / 4 / 2 / −1 with a double-points banker each week. Change them any time in Settings.</span>
+        <span class="hint">Defaults match the classic 7 / 4 / 2 / −1, −2 for no prediction, and a double-points banker each week. Change them any time in Settings.</span>
       </div>`,
     footer: html`<button class="btn" data-close>Cancel</button><button class="btn btn--primary" id="n-save">Create league</button>`,
     onMount(root) {

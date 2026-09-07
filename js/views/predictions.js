@@ -106,8 +106,8 @@ export async function render(host, ctx) {
                           <button class="bonus-btn ${v.bonus ? "is-on" : ""}" data-bonus="${f.id}|${e.id}"
                                   title="Mark as ${e.full_name}'s banker (×${rules.bonusMultiplier})" aria-pressed="${v.bonus}">⚡</button>
                         </span>
-                        <span class="cell-pts">${res && res.kind !== "pending" && res.kind !== "none"
-                          ? html`<span class="pts pts--${res.kind}" title="${KIND_LABELS[res.kind]}">${res.points > 0 ? "+" : ""}${res.points}</span>`
+                        <span class="cell-pts">${res && res.kind !== "pending" && (res.kind !== "none" || res.points)
+                          ? html`<span class="pts pts--${res.kind === "none" ? "wrong" : res.kind}" title="${KIND_LABELS[res.kind]}">${res.points > 0 ? "+" : ""}${res.points}</span>`
                           : ""}</span>
                       </div>
                     </td>`;

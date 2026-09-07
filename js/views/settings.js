@@ -50,6 +50,7 @@ export async function render(host, ctx) {
             ["r-gd", "Goal difference", rules.gd, "Right margin, wrong scores"],
             ["r-outcome", "Outcome", rules.outcome, "Right winner or a draw"],
             ["r-wrong", "Wrong", rules.wrong, "Everything else"],
+            ["r-missed", "No prediction", rules.missed, "Nothing submitted for a played fixture"],
             ["r-mult", "Banker multiplier", rules.bonusMultiplier, "Applied to the chosen fixture"],
           ].map(([id, label, val, hint]) => html`
             <div class="field">
@@ -167,6 +168,7 @@ export async function render(host, ctx) {
       gd: Number(qs("#r-gd", host).value),
       outcome: Number(qs("#r-outcome", host).value),
       wrong: Number(qs("#r-wrong", host).value),
+      missed: Number(qs("#r-missed", host).value),
       bonusMultiplier: Number(qs("#r-mult", host).value),
       bonusAppliesToNegatives: qs("#r-neg", host).checked,
     };
