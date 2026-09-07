@@ -1,4 +1,4 @@
-import { html, raw, icon, qs, rankClass, movementBadge, downloadCsv, emptyState } from "../lib/ui.js";
+import { html, raw, icon, qs, rankClass, movementBadge, movementText, downloadCsv, emptyState } from "../lib/ui.js";
 import { state } from "../lib/store.js";
 import { derived, myEntrant } from "../lib/derive.js";
 import { renderLineChart } from "../lib/charts.js";
@@ -48,7 +48,7 @@ export async function render(host) {
         <div class="card__body card__body--flush table-wrap">
           <table class="tbl">
             <thead><tr>
-              <th>#</th><th class="ctr">+/−</th><th>Entrant</th>
+              <th>#</th><th class="ctr" title="Movement since the previous gameweek">Movement</th><th>Entrant</th>
               <th class="num">Total</th><th class="num">GW${snap.gw}</th>
               <th class="num">Exact</th><th class="num">GD</th><th class="num">Out</th><th class="num">Miss</th>
               <th class="num">Gap to top</th>
@@ -57,7 +57,7 @@ export async function render(host) {
               ${raw(snap.rows.map((r) => html`
                 <tr class="${me && r.entrantId === String(me.id) ? "is-me" : ""}">
                   <td><span class="${rankClass(r.rank)}">${r.rank}${r.tied ? "=" : ""}</span></td>
-                  <td class="ctr">${movementBadge(r.movement)}</td>
+                  <td class="ctr">${movementBadge(r.movement, r.prevRank)}</td>
                   <td><div class="who"><span class="who__name">${r.name}</span><span class="who__team">${r.team || ""}</span></div></td>
                   <td class="num mono"><b>${r.points}</b></td>
                   <td class="num mono">${r.perGw[snap.gw] ?? 0}</td>
@@ -117,7 +117,7 @@ export async function render(host) {
       const head = ["Rank", "Full name", "Team", "Total", `GW${snap.gw}`, "Exact", "GD", "Outcome", "Wrong", "Movement"];
       downloadCsv(`${state.league.name} — table after GW${snap.gw}.csv`, [head, ...snap.rows.map((r) => [
         r.rank, r.name, r.team, r.points, r.perGw[snap.gw] ?? 0, r.exact, r.gd, r.outcome, r.wrong,
-        r.movement === null ? "new" : r.movement,
+        movementText(r.movement),
       ])]);
     });
 

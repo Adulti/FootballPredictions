@@ -75,11 +75,38 @@ export function toLocalInput(iso) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-export function movementBadge(m) {
-  if (m === null || m === undefined) return html`<span class="mv mv--same" title="New entry">•</span>`;
-  if (m > 0) return html`<span class="mv mv--up" title="Up ${m}">▲${m}</span>`;
-  if (m < 0) return html`<span class="mv mv--down" title="Down ${-m}">▼${-m}</span>`;
-  return html`<span class="mv mv--same" title="No change">–</span>`;
+/** 1 -> "1st", 12 -> "12th", 23 -> "23rd" */
+export function ordinal(n) {
+  const i = Number(n);
+  if (!Number.isFinite(i)) return String(n);
+  const rem100 = Math.abs(i) % 100;
+  const suffix = rem100 >= 11 && rem100 <= 13 ? "th"
+    : ["th", "st", "nd", "rd"][Math.abs(i) % 10] || "th";
+  return `${i}${suffix}`;
+}
+
+/** Same wording as the badge, without markup — for CSV and print. */
+export function movementText(m) {
+  if (m === null || m === undefined) return "New";
+  if (m > 0) return `Up ${m}`;
+  if (m < 0) return `Down ${-m}`;
+  return "No move";
+}
+
+/**
+ * Rank movement since the previous completed gameweek, in words:
+ * "Up 2" (green), "Down 2" (red), "No move" (amber), "New" for a first
+ * appearance. Pass `prevRank` to name last week's position in the tooltip.
+ */
+export function movementBadge(m, prevRank = null) {
+  const was = prevRank === null || prevRank === undefined ? "" : ` — was ${ordinal(prevRank)}`;
+  const places = (n) => `${n} place${n === 1 ? "" : "s"}`;
+  if (m === null || m === undefined) {
+    return html`<span class="mv mv--new" title="Not in last week's table">New</span>`;
+  }
+  if (m > 0) return html`<span class="mv mv--up" title="Up ${places(m)}${was}">▲ Up ${m}</span>`;
+  if (m < 0) return html`<span class="mv mv--down" title="Down ${places(-m)}${was}">▼ Down ${-m}</span>`;
+  return html`<span class="mv mv--same" title="Same position as last week${was}">No move</span>`;
 }
 
 export const rankClass = (r) => (r <= 3 ? `rank rank--${r}` : "rank");

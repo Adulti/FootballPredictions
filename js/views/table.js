@@ -1,4 +1,4 @@
-import { html, raw, icon, movementBadge, rankClass, fmt1, downloadCsv, on, qs, emptyState } from "../lib/ui.js";
+import { html, raw, icon, movementBadge, movementText, rankClass, fmt1, downloadCsv, on, qs, emptyState } from "../lib/ui.js";
 import { state } from "../lib/store.js";
 import { derived, myEntrant } from "../lib/derive.js";
 import { standings, formFor } from "../lib/scoring.js";
@@ -40,7 +40,7 @@ export function tableRows(rows, tal, { showForm = true } = {}) {
   return rows.map((r) => html`
     <tr class="${me && r.entrantId === String(me.id) ? "is-me" : ""}">
       <td><span class="${rankClass(r.rank)}">${r.rank}${r.tied ? "=" : ""}</span></td>
-      <td class="ctr">${movementBadge(r.movement)}</td>
+      <td class="ctr">${movementBadge(r.movement, r.prevRank)}</td>
       <td>
         <div class="row" style="gap:9px;flex-wrap:nowrap">
           <div class="avatar">${r.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase()}</div>
@@ -100,7 +100,7 @@ export async function render(host) {
           <div class="table-wrap">
             <table class="tbl">
               <thead><tr>
-                <th>#</th><th class="ctr" title="Movement since the previous gameweek">+/−</th>
+                <th>#</th><th class="ctr" title="Movement since the previous gameweek">Movement</th>
                 <th>Entrant</th>
                 <th class="num">Pts</th>
                 <th class="num" title="Exact scores (${rules.exact} pts)">Exact</th>
@@ -145,8 +145,8 @@ export async function render(host) {
     });
     qs("#print", host).addEventListener("click", () => window.print());
     qs("#csv", host).addEventListener("click", () => {
-      const head = ["Rank", "Full name", "Team name", "Points", "Exact", "GD", "Outcome", "Wrong", "No prediction", "Played", "Avg", "Bonus pts"];
-      const body = rows.map((r) => [r.rank, r.name, r.team, r.points, r.exact, r.gd, r.outcome, r.wrong, r.missing, r.played, fmt1(r.avg), r.bonusPoints]);
+      const head = ["Rank", "Movement", "Full name", "Team name", "Points", "Exact", "GD", "Outcome", "Wrong", "No prediction", "Played", "Avg", "Bonus pts"];
+      const body = rows.map((r) => [r.rank, movementText(r.movement), r.name, r.team, r.points, r.exact, r.gd, r.outcome, r.wrong, r.missing, r.played, fmt1(r.avg), r.bonusPoints]);
       downloadCsv(`${state.league.name} — table${asOf === null ? "" : ` after GW${asOf}`}.csv`, [head, ...body]);
     });
   };
