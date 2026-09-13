@@ -273,6 +273,32 @@ async function client() {
 }
 const ok = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
 
+/**
+ * Every prediction in a league, fetched in pages.
+ *
+ * PostgREST caps one response at `db-max-rows` — 1000 on Supabase — and does it
+ * SILENTLY: you get 1000 rows, no error and no flag. 33 entrants across 47
+ * fixtures is ~1200 rows, so whoever sorts last simply vanishes from the table,
+ * the grid and every stat, while their rows sit perfectly fine in the database.
+ *
+ * The explicit .order() matters: without a stable sort, paging can return the
+ * same row on two pages, or skip one entirely.
+ */
+const PAGE = 1000;
+async function fetchAllPredictions(c, leagueId) {
+  const all = [];
+  for (let from = 0; ; from += PAGE) {
+    const page = ok(await c
+      .from("predictions")
+      .select("*")
+      .eq("league_id", leagueId)
+      .order("id")
+      .range(from, from + PAGE - 1)) || [];
+    all.push(...page);
+    if (page.length < PAGE) return all;
+  }
+}
+
 const sbBackend = {
   async currentUser() {
     const c = await client();
@@ -331,13 +357,13 @@ const sbBackend = {
     const [entrants, fixtures, predictions, members] = await Promise.all([
       c.from("entrants").select("*").eq("league_id", leagueId).order("full_name"),
       c.from("fixtures").select("*").eq("league_id", leagueId).order("gameweek").order("kickoff", { nullsFirst: true }),
-      c.from("predictions").select("*").eq("league_id", leagueId),
+      fetchAllPredictions(c, leagueId),
       c.from("league_members").select("*, profiles:user_id (display_name, email)").eq("league_id", leagueId),
     ]);
     return {
       entrants: ok(entrants) || [],
       fixtures: ok(fixtures) || [],
-      predictions: ok(predictions) || [],
+      predictions: predictions || [],
       members: (ok(members) || []).map((m) => ({
         ...m, display_name: m.profiles?.display_name || "Member", email: m.profiles?.email || "",
       })),
