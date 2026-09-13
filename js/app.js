@@ -29,7 +29,7 @@ const ROUTES = {
   history:     { view: vHistory,     title: "Table history",   icon: "history",  group: "league" },
   stats:       { view: vStats,       title: "Stats & records", icon: "chart",    group: "league" },
   fixtures:    { view: vFixtures,    title: "Fixtures",        icon: "clock",    group: "admin" },
-  predictions: { view: vPredictions, title: "Predictions",     icon: "edit",     group: "admin" },
+  predictions: { view: vPredictions, title: "Predictions",     icon: "edit",     group: "admin", wide: true },
   entrants:    { view: vEntrants,    title: "Entrants",        icon: "users",    group: "admin" },
   settings:    { view: vSettings,    title: "Settings",        icon: "gear",     group: "admin" },
   leagues:     { view: vLeagues,     title: "My leagues",      icon: "swap",     group: null },
@@ -188,7 +188,7 @@ function shellHtml(active) {
         <div class="spacer"></div>
         ${admin ? html`<span class="pill pill--accent" title="You can edit this league">${icon("check", 13)} Admin</span>` : ""}
       </header>
-      <main class="content" id="view"></main>
+      <main class="content ${def.wide ? "content--wide" : ""}" id="view"></main>
     </div>
   </div>`;
 }

@@ -1,5 +1,6 @@
 import {
   html, raw, icon, qs, qsa, on, toast, openModal, closeModal, emptyState, initials,
+  syncScrollbars,
 } from "../lib/ui.js";
 import { state, api } from "../lib/store.js";
 import { derived, fixturesFor, predIndex, nextOpenGw, latestCompletedGw } from "../lib/derive.js";
@@ -70,7 +71,7 @@ export async function render(host, ctx) {
           <span class="pill">${state.entrants.length} entrants × ${fixtures.length} fixtures</span>
           ${tal.completedGameweeks.includes(gw) ? html`<span class="pill pill--warn">Results already entered — edits will re-score the week</span>` : ""}
         </div>
-        <div class="card__body card__body--flush table-wrap">
+        <div class="card__body card__body--flush table-wrap" id="pgrid-scroll">
           <table class="tbl pgrid">
             <thead><tr>
               <th class="sticky-col" style="min-width:180px">Entrant</th>
@@ -120,6 +121,9 @@ export async function render(host, ctx) {
         </div>
       </div>
     </div>`;
+
+    /* The grid is wider than any screen — mirror its scrollbar above it too. */
+    syncScrollbars(qs("#pgrid-scroll", host));
 
     /* ---------- editing ---------- */
     const markDirty = (entId) => {

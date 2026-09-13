@@ -258,6 +258,73 @@ export async function copyText(text) {
   catch { toast("Couldn't copy — select it manually", "bad"); }
 }
 
+/* ---------- wide-table scrolling ---------- */
+/**
+ * Give a horizontally scrolling element a mirrored scrollbar above it, so a
+ * wide table can be panned without scrolling to the bottom of the page first.
+ * The bar hides itself when there is nothing to scroll.
+ *
+ * Safe to call repeatedly — a re-render replaces the host's DOM, and the old
+ * ResizeObserver is dropped with it.
+ *
+ * @param {HTMLElement|null} wrap the overflow-x container (e.g. .table-wrap)
+ */
+export function syncScrollbars(wrap) {
+  if (!wrap || wrap.previousElementSibling?.classList.contains("scroll-sync")) return;
+
+  const bar = document.createElement("div");
+  bar.className = "scroll-sync";
+  bar.setAttribute("aria-hidden", "true");
+  bar.hidden = true; // shown by measure(), once we know there is overflow
+  const spacer = document.createElement("i");
+  bar.append(spacer);
+  wrap.before(bar);
+
+  const measure = () => {
+    // Views render into #app while it is still hidden during boot, where every
+    // width reads as 0. That is "not laid out yet", not "nothing to scroll" —
+    // so wait for a real width instead of concluding the bar isn't needed.
+    if (!wrap.clientWidth) {
+      if (wrap.isConnected) requestAnimationFrame(measure);
+      return;
+    }
+    const w = wrap.scrollWidth;
+    spacer.style.width = `${w}px`;
+    bar.hidden = w <= wrap.clientWidth + 1;
+  };
+
+  // Mirror in both directions. Writing scrollLeft fires a scroll event back on
+  // the other element, which is why the write is guarded by a comparison: the
+  // echo finds the two already in step and stops there. No "who is driving"
+  // flag to get stuck — a dropped or coalesced event just self-corrects on the
+  // next one. The 1px tolerance absorbs sub-pixel rounding.
+  const link = (from, to) => from.addEventListener("scroll", () => {
+    if (Math.abs(to.scrollLeft - from.scrollLeft) > 1) to.scrollLeft = from.scrollLeft;
+  }, { passive: true });
+  link(bar, wrap);
+  link(wrap, bar);
+
+  measure();
+  // Web fonts and late layout can change the table's width after first paint.
+  requestAnimationFrame(measure);
+
+  if (typeof ResizeObserver === "function") {
+    const ro = new ResizeObserver(measure);
+    ro.observe(wrap);
+    if (wrap.firstElementChild) ro.observe(wrap.firstElementChild);
+    // Pin the observer to the element it watches, so it lives exactly as long.
+    wrap._scrollSync = ro;
+  }
+
+  const onResize = () => {
+    if (!wrap.isConnected) { window.removeEventListener("resize", onResize); return; }
+    measure();
+  };
+  window.addEventListener("resize", onResize, { passive: true });
+
+  return measure;
+}
+
 /* ---------- misc ---------- */
 export function debounce(fn, ms = 300) {
   let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
